@@ -1,21 +1,17 @@
-import unittest
-from src.app import app
-from flask import json
+import pytest
+from src.flask.app import app
 
-class TestIntegration(unittest.TestCase):
+@pytest.fixture
+def client():
+    return app.test_client()
 
-    def setUp(self):
-        self.app = app.test_client()
-        self.app.testing = True  # Enables testing mode
+def test_hello_endpoint(client):
+    response = client.get('/hello')
+    assert response.status_code == 200
+    assert response.json == {"message": "Hello, World!"}
 
-    def test_user_login(self):
-        response = self.app.post('/login', data=json.dumps({
-            "username": "testuser",
-            "password": "testpassword"
-        }), content_type='application/json')
+def test_sum_endpoint(client):
+    response = client.get('/sum/4/5')
+    assert response.status_code == 200
+    assert response.json == {"sum": 9}
 
-        self.assertEqual(response.status_code, 200)  # Check login success
-        self.assertIn('token', response.get_json())  # Ensure token is returned
-
-if __name__ == '__main__':
-    unittest.main()
